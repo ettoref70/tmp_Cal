@@ -11,6 +11,8 @@
   <!-- FullCalendar JavaScript -->
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
 
+  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -62,6 +64,7 @@
 
   <script>
     document.addEventListener('DOMContentLoaded', function () {
+      const socket = io(); // Connessione al server Socket.IO
 
       function createCalendar(id) {
         const calendarEl = document.getElementById(id);
@@ -72,7 +75,7 @@
           editable: true,
           allDaySlot: false,
           slotMinTime: '08:00:00',
-          slotMaxTime: '20:00:00',
+          slotMaxTime: '22:00:00',
           height: 'auto',
           slotDuration: '00:15:00',
           slotLabelFormat: {
@@ -80,33 +83,8 @@
             minute: '2-digit',
             hour12: false
           },
-          events: async function (fetchInfo, successCallback, failureCallback) {
-            try {
-              const response = await fetch('/events');
-              const events = await response.json();
-              successCallback(events.filter(event => event.room === id));
-            } catch (error) {
-              failureCallback(error);
-              alert('Errore nel caricamento degli eventi.');
-              console.error(error);
-            }
-          },
-          eventChange: async function (info) {
-            const updatedEvent = {
-              title: info.event.title,
-              start: info.event.start.toISOString(),
-              end: info.event.end.toISOString(),
-              room: info.event.extendedProps.room
-            };
-            
-            await fetch(`/events/${info.event.id}`, {
-              method: 'PUT',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(updatedEvent)
-            });
-            
-            info.view.calendar.refetchEvents();
-          },
+          events: [], // Saranno caricati via socket.io
+
           select: async function (info) {
             const title = prompt('Inserisci il tuo nome per la prenotazione:');
             if (title && title.trim() !== '') {
@@ -121,26 +99,52 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(newEvent)
               });
-              calendar.refetchEvents();
             }
             calendar.unselect();
           },
+
+          eventChange: async function (info) {
+            const updatedEvent = {
+              title: info.event.title,
+              start: info.event.start.toISOString(),
+              end: info.event.end.toISOString(),
+              room: id
+            };
+
+            await fetch(`/events/${info.event.id}`, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(updatedEvent)
+            });
+          },
+
           eventClick: async function (info) {
             if (confirm(`Vuoi eliminare la prenotazione di "${info.event.title}"?`)) {
               await fetch(`/events/${info.event.id}`, {
                 method: 'DELETE'
               });
-              calendar.refetchEvents();
             }
           }
         });
+
         calendar.render();
+
+        // Carica eventi iniziali tramite socket.io
+        socket.on('loadEvents', (events) => {
+          calendar.removeAllEvents();
+          calendar.addEventSource(events.filter(e => e.room === id));
+        });
+
+        // Aggiorna calendario quando riceve aggiornamenti
+        socket.on('eventUpdated', (events) => {
+          calendar.removeAllEvents();
+          calendar.addEventSource(events.filter(e => e.room === id));
+        });
       }
 
       createCalendar('calendar1');
       createCalendar('calendar2');
       createCalendar('calendar3');
-
     });
   </script>
 
