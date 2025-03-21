@@ -36,6 +36,14 @@ app.delete('/events/:id', (req, res) => {
   res.status(204).send();
 });
 
+// Modifica evento esistente
+app.put('/events/:id', (req, res) => {
+  let events = loadEvents();
+  events = events.map(event => event.id === parseInt(req.params.id) ? { ...event, ...req.body } : event);
+  saveEvents(events);
+  res.json(events.find(event => event.id === parseInt(req.params.id)));
+});
+
 // Serve il frontend staticamente
 app.use(express.static(path.join(__dirname, '../frontend')));
 

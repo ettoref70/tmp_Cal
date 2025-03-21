@@ -3,7 +3,7 @@
 
 <head>
   <meta charset="UTF-8">
-  <title>Prenotazione Aule con FullCalendar</title>
+  <title>Prenotazione Spazi OAPa</title>
 
   <!-- FullCalendar CSS -->
   <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css" rel="stylesheet">
@@ -72,7 +72,7 @@
           editable: true,
           allDaySlot: false,
           slotMinTime: '08:00:00',
-          slotMaxTime: '22:00:00',
+          slotMaxTime: '20:00:00',
           height: 'auto',
           slotDuration: '00:15:00',
           slotLabelFormat: {
@@ -90,6 +90,22 @@
               alert('Errore nel caricamento degli eventi.');
               console.error(error);
             }
+          },
+          eventChange: async function (info) {
+            const updatedEvent = {
+              title: info.event.title,
+              start: info.event.start.toISOString(),
+              end: info.event.end.toISOString(),
+              room: info.event.extendedProps.room
+            };
+            
+            await fetch(`/events/${info.event.id}`, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(updatedEvent)
+            });
+            
+            info.view.calendar.refetchEvents();
           },
           select: async function (info) {
             const title = prompt('Inserisci il tuo nome per la prenotazione:');
