@@ -1,0 +1,6 @@
+services: 
+  - type: web 
+    name: tmp_cal 
+    env: node 
+    buildCommand: apt-get  update && apt-get install -y build-essential python3 && npm install 
+    startCommand: npm start
