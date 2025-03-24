@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const Database = require('better-sqlite3');
+const fs = require('fs');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -11,7 +12,15 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, '../frontend')));
 
 // Database SQLite permanente
-const db = new Database('/data/database.sqlite');
+
+// Assicurati che la directory /data esista
+const dbPath = '/data/database.sqlite';
+const dir = path.dirname(dbPath);
+if (!fs.existsSync(dir)) {
+  fs.mkdirSync(dir, { recursive: true });
+}
+const db = new Database(dbPath);
+
 //const db = new Database(path.join(__dirname, 'database.sqlite'));
 
 // Crea tabella se non esiste
