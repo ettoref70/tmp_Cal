@@ -74,20 +74,34 @@
       background-color: #45a049;
     }
 
+    .nav-group {
+      display: flex;
+      gap: 1px;  /* Rimuove lo spazio tra i pulsanti freccia */
+      margin: 0 2px;  /* Aggiunge spazio ai lati del gruppo */
+    }
+
     .nav-btn {
       padding: 1px 5px;
       height: 30px;
       background-color: #2196F3;
       color: white;
       border: none;
-      border-radius: 3px;
+      border-radius: 0;  /* Rimuove il bordo arrotondato */
       cursor: pointer;
       font-weight: bold;
-      font-size: 9px;
+      font-size: 11px;
     }
 
     .nav-btn:hover {
       background-color: #1976D2;
+    }
+
+    .nav-btn.prev-btn {
+      border-radius: 3px 0 0 3px;  /* Arrotonda solo i bordi sinistri */
+    }
+
+    .nav-btn.next-btn {
+      border-radius: 0 3px 3px 0;  /* Arrotonda solo i bordi destri */
     }
 
   </style>
@@ -102,8 +116,10 @@
       <h2>Tardis</h2>
       <div class="date-controls">
         <input type="date" id="datepicker1">
-        <button class="nav-btn prev-btn" id="prev1">←</button>
-        <button class="nav-btn next-btn" id="next1">→</button>
+        <div class="nav-group">
+          <button class="nav-btn prev-btn" id="prev1">←</button>
+          <button class="nav-btn next-btn" id="next1">→</button>
+        </div>
         <button class="today-btn" id="today1">Oggi</button>
       </div>
       <div id="calendar1"></div>
@@ -112,8 +128,10 @@
       <h2>Aula</h2>
       <div class="date-controls">
         <input type="date" id="datepicker2">
-        <button class="nav-btn prev-btn" id="prev2">←</button>
-        <button class="nav-btn next-btn" id="next2">→</button>
+        <div class="nav-group">
+          <button class="nav-btn prev-btn" id="prev2">←</button>
+          <button class="nav-btn next-btn" id="next2">→</button>
+        </div>
         <button class="today-btn" id="today2">Oggi</button>
       </div>
       <div id="calendar2"></div>
@@ -122,8 +140,10 @@
       <h2>Museo</h2>
       <div class="date-controls">
         <input type="date" id="datepicker3">
-        <button class="nav-btn prev-btn" id="prev3">←</button>
-        <button class="nav-btn next-btn" id="next3">→</button>
+        <div class="nav-group">
+          <button class="nav-btn prev-btn" id="prev3">←</button>
+          <button class="nav-btn next-btn" id="next3">→</button>
+        </div>
         <button class="today-btn" id="today3">Oggi</button>
       </div>
       <div id="calendar3"></div>
