@@ -7,15 +7,20 @@ const fs = require('fs');
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+
 app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '../frontend')));
 
-const dbPath = process.env.NODE_ENV === 'production' 
-  ? '/data/db-volume/database.sqlite' // Railway volume path
-  : path.join(__dirname, 'database.sqlite'); // Local development path
+// Determine database path
+const isProduction = process.env.RAILWAY_ENVIRONMENT === 'production'; // More reliable check
+const dbDir = isProduction ? '/data' : __dirname;
+const dbPath = path.join(dbDir, 'database.sqlite');
 
-// const dbPath = path.join(__dirname, 'database.sqlite')
+// Create directory if needed
+if (isProduction && !fs.existsSync(dbDir)) {
+  fs.mkdirSync(dbDir, { recursive: true });
+}
 
 // Database SQLite
 const db = new Database(dbPath);
