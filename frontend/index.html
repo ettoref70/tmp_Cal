@@ -40,6 +40,56 @@
     h2 {
       text-align: center;
     }
+
+    .datepicker-container {
+      text-align: center;
+      margin-bottom: 10px;
+    }
+
+    input[type="date"] {
+      font-size: 18px;  /* Adjust this value as needed */
+      padding: 2px;
+      height: 30px;
+    }
+
+    .date-controls {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .today-btn {
+      padding: 5px 15px;
+      height: 30px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+
+    .today-btn:hover {
+      background-color: #45a049;
+    }
+
+    .nav-btn {
+      padding: 1px 5px;
+      height: 30px;
+      background-color: #2196F3;
+      color: white;
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 9px;
+    }
+
+    .nav-btn:hover {
+      background-color: #1976D2;
+    }
+
   </style>
 </head>
 
@@ -50,14 +100,32 @@
   <div class="container">
     <div class="room">
       <h2>Tardis</h2>
+      <div class="date-controls">
+        <input type="date" id="datepicker1">
+        <button class="nav-btn prev-btn" id="prev1">←</button>
+        <button class="nav-btn next-btn" id="next1">→</button>
+        <button class="today-btn" id="today1">Oggi</button>
+      </div>
       <div id="calendar1"></div>
     </div>
     <div class="room">
       <h2>Aula</h2>
+      <div class="date-controls">
+        <input type="date" id="datepicker2">
+        <button class="nav-btn prev-btn" id="prev2">←</button>
+        <button class="nav-btn next-btn" id="next2">→</button>
+        <button class="today-btn" id="today2">Oggi</button>
+      </div>
       <div id="calendar2"></div>
     </div>
     <div class="room">
       <h2>Museo</h2>
+      <div class="date-controls">
+        <input type="date" id="datepicker3">
+        <button class="nav-btn prev-btn" id="prev3">←</button>
+        <button class="nav-btn next-btn" id="next3">→</button>
+        <button class="today-btn" id="today3">Oggi</button>
+      </div>
       <div id="calendar3"></div>
     </div>
   </div>
@@ -65,6 +133,7 @@
   <script>
     document.addEventListener('DOMContentLoaded', function () {
       const socket = io(); // Connessione al server Socket.IO
+      const calendars = {};
 
       function createCalendar(id) {
         const calendarEl = document.getElementById(id);
@@ -83,6 +152,7 @@
             minute: '2-digit',
             hour12: false
           },
+          headerToolbar: false,
           events: [], // Saranno caricati via socket.io
 
           select: async function (info) {
@@ -128,14 +198,52 @@
         });
 
         calendar.render();
+        calendars[id] = calendar;
 
-        // Carica eventi iniziali tramite socket.io
+        const pickerId = 'datepicker' + id.replace('calendar', '');
+        const picker = document.getElementById(pickerId);
+        const todayBtn = document.getElementById('today' + id.replace('calendar', ''));
+        const prevBtn = document.getElementById('prev' + id.replace('calendar', ''));
+        const nextBtn = document.getElementById('next' + id.replace('calendar', ''));
+        
+        // Imposta la data iniziale
+        picker.valueAsDate = new Date();
+        
+        // Gestione click sul pulsante Oggi
+        todayBtn.addEventListener('click', function() {
+            const today = new Date();
+            picker.valueAsDate = today;
+            calendar.today();
+            calendar.gotoDate(today);
+        });
+
+        // Gestione click sui pulsanti di navigazione
+        prevBtn.addEventListener('click', function() {
+            const currentDate = calendar.getDate();
+            const newDate = new Date(currentDate);
+            newDate.setDate(newDate.getDate() - 1);
+            picker.valueAsDate = newDate;
+            calendar.gotoDate(newDate);
+        });
+
+        nextBtn.addEventListener('click', function() {
+            const currentDate = calendar.getDate();
+            const newDate = new Date(currentDate);
+            newDate.setDate(newDate.getDate() + 1);
+            picker.valueAsDate = newDate;
+            calendar.gotoDate(newDate);
+        });
+
+        picker.addEventListener('change', function (e) {
+          const newDate = e.target.value;
+          if (newDate) calendar.gotoDate(newDate);
+        });
+
         socket.on('loadEvents', (events) => {
           calendar.removeAllEvents();
           calendar.addEventSource(events.filter(e => e.room === id));
         });
 
-        // Aggiorna calendario quando riceve aggiornamenti
         socket.on('eventUpdated', (events) => {
           calendar.removeAllEvents();
           calendar.addEventSource(events.filter(e => e.room === id));
