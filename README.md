@@ -18,34 +18,16 @@ Prenotazione Aule is a web application that facilitates the booking of classroom
    cd tmp_Cal
    ```
 
-2. **Navigate to the backend directory:**
-   ```bash
-   cd backend
-   ```
-
-3. **Install dependencies:**
+2. **Install dependencies:**
    ```bash
    npm install
    ```
 
-4. **Set up the database:**
-   - Ensure you have SQLite installed.
-   - Initialize the database:
-     ```bash
-     npx sequelize-cli db:migrate
-     ```
-
-5. **Start the server:**
+3. **Start the server:**
    ```bash
-   node server.js
+   node backend/server.js
    ```
 
-6. **Navigate to the frontend directory:**
-   ```bash
-   cd ../frontend
-   ```
-
-7. **Open `index.html` in your preferred web browser.**
 
 ## Usage
 
