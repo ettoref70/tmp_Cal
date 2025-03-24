@@ -11,7 +11,8 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, '../frontend')));
 
 // Database SQLite permanente
-const db = new Database(path.join(__dirname, 'database.sqlite'));
+const db = new Database('/data/database.sqlite');
+//const db = new Database(path.join(__dirname, 'database.sqlite'));
 
 // Crea tabella se non esiste
 db.prepare(`
