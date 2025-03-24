@@ -11,9 +11,11 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '../frontend')));
 
-const dbPath = process.env.NODE_ENV === 'production' 
-  ? '/data/db-volume/database.sqlite' // Railway volume path
-  : path.join(__dirname, 'database.sqlite'); // Local development path
+// const dbPath = process.env.NODE_ENV === 'production' 
+//   ? '/data/db-volume/database.sqlite' // Railway volume path
+//   : path.join(__dirname, 'database.sqlite'); // Local development path
+
+const dbPath = path.join(__dirname, 'database.sqlite')
 
 // Database SQLite
 const db = new Database(dbPath);
