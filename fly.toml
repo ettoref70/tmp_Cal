@@ -1,10 +1,11 @@
-app = "Spazi OAPa"
-
-[build]
-  image = "node:18" # o quello che usi nel Dockerfile
+app = "tmp-cal"
 
 [env]
   PORT = "8080"
+
+[mounts]
+  source = "data"
+  destination = "/data"
 
 [[services]]
   internal_port = 8080
