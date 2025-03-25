@@ -64,7 +64,6 @@ Prenotazione Aule is a web application that facilitates the booking of classroom
 
 - [FullCalendar](https://fullcalendar.io/) - Calendar interface
 - [Sequelize](https://sequelize.org/) - ORM support
-- [Render](https://render.com/) - Deployment platform
 
 ## License
 
