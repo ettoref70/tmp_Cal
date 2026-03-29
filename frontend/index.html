@@ -3,7 +3,11 @@
 
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Prenotazione Spazi OAPa</title>
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
   <!-- FullCalendar CSS -->
   <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css" rel="stylesheet">
@@ -14,135 +18,407 @@
   <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
 
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #f0f0f0;
-      padding: 20px;
+    *, *::before, *::after {
+      box-sizing: border-box;
       margin: 0;
+      padding: 0;
     }
 
+    :root {
+      --bg: #f4f6fb;
+      --surface: #ffffff;
+      --border: #e2e8f0;
+      --text-primary: #1a202c;
+      --text-secondary: #64748b;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,.07), 0 1px 2px rgba(0,0,0,.05);
+      --shadow-md: 0 4px 16px rgba(0,0,0,.08), 0 1px 3px rgba(0,0,0,.06);
+      --radius: 14px;
+
+      /* Room accent colors */
+      --room1: #6366f1; /* Indigo – Tardis */
+      --room2: #0ea5e9; /* Sky – Aula */
+      --room3: #10b981; /* Emerald – Museo */
+
+      --today-btn: #6366f1;
+      --today-btn-hover: #4f46e5;
+      --nav-btn: #e0e7ff;
+      --nav-btn-hover: #c7d2fe;
+      --nav-btn-text: #4f46e5;
+    }
+
+    body {
+      font-family: 'Inter', Arial, sans-serif;
+      background-color: var(--bg);
+      min-height: 100vh;
+      padding: 32px 20px 48px;
+    }
+
+    /* ── Header ── */
+    header {
+      text-align: center;
+      margin-bottom: 36px;
+    }
+
+    header h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      letter-spacing: -0.5px;
+    }
+
+    header p {
+      margin-top: 6px;
+      font-size: .9rem;
+      color: var(--text-secondary);
+    }
+
+    /* ── Layout ── */
     .container {
       display: flex;
-      justify-content: space-between;
-      gap: 10px;
-      max-width: 1200px;
+      justify-content: center;
+      gap: 20px;
+      max-width: 1340px;
       margin: auto;
     }
 
+    /* ── Room card ── */
     .room {
       flex: 1;
-      background: #fff;
-      padding: 10px;
-      border-radius: 5px;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-md);
+      padding: 20px 16px 16px;
+      overflow: hidden;
     }
 
-    h2 {
-      text-align: center;
+    .room-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 14px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--border);
     }
 
-    .datepicker-container {
-      text-align: center;
-      margin-bottom: 10px;
+    .room-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      flex-shrink: 0;
     }
 
-    input[type="date"] {
-      font-size: 18px;  /* Adjust this value as needed */
-      padding: 1px;
-      height: 30px;
+    .room:nth-child(1) .room-dot { background: var(--room1); }
+    .room:nth-child(2) .room-dot { background: var(--room2); }
+    .room:nth-child(3) .room-dot { background: var(--room3); }
+
+    .room h2 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--text-primary);
     }
 
+    /* ── Date controls ── */
     .date-controls {
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 8px;
-      margin-bottom: 10px;
+      gap: 6px;
+      margin-bottom: 14px;
     }
 
-    .today-btn {
-      padding: 1px 12px;
-      height: 30px;
-      background-color: #4CAF50;
-      color: white;
-      border: none;
-      border-radius: 3px;
+    input[type="date"] {
+      font-family: 'Inter', Arial, sans-serif;
+      font-size: .85rem;
+      font-weight: 500;
+      color: var(--text-primary);
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 6px 10px;
+      height: 34px;
       cursor: pointer;
+      outline: none;
+      transition: border-color .15s;
     }
 
-    .today-btn:hover {
-      background-color: #45a049;
+    input[type="date"]:focus {
+      border-color: #6366f1;
+      box-shadow: 0 0 0 3px rgba(99,102,241,.15);
     }
 
     .nav-group {
       display: flex;
-      gap: 1px;  /* Rimuove lo spazio tra i pulsanti freccia */
-      margin: 0 0px;  /* Aggiunge spazio ai lati del gruppo */
+      gap: 2px;
     }
 
     .nav-btn {
-      padding: 1px 5px;
-      height: 30px;
-      background-color: #2196F3;
-      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 34px;
+      height: 34px;
+      background: var(--nav-btn);
+      color: var(--nav-btn-text);
       border: none;
-      border-radius: 0;  /* Rimuove il bordo arrotondato */
       cursor: pointer;
-      font-weight: bold;
-      font-size: 11px;
+      font-size: 1rem;
+      font-weight: 700;
+      transition: background .15s;
     }
 
-    .nav-btn:hover {
-      background-color: #1976D2;
+    .nav-btn:hover { background: var(--nav-btn-hover); }
+
+    .nav-btn.prev-btn { border-radius: 8px 0 0 8px; }
+    .nav-btn.next-btn { border-radius: 0 8px 8px 0; }
+
+    .today-btn {
+      height: 34px;
+      padding: 0 14px;
+      background: var(--today-btn);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-family: 'Inter', Arial, sans-serif;
+      font-size: .82rem;
+      font-weight: 600;
+      letter-spacing: .3px;
+      transition: background .15s, transform .1s;
     }
 
-    .nav-btn.prev-btn {
-      border-radius: 3px 0 0 3px;  /* Arrotonda solo i bordi sinistri */
+    .today-btn:hover { background: var(--today-btn-hover); }
+    .today-btn:active { transform: scale(.97); }
+
+    /* ── FullCalendar overrides ── */
+    .fc {
+      font-family: 'Inter', Arial, sans-serif;
+      font-size: .82rem;
     }
 
-    .nav-btn.next-btn {
-      border-radius: 0 3px 3px 0;  /* Arrotonda solo i bordi destri */
+    .fc .fc-timegrid-slot {
+      height: 28px !important;
     }
 
+    .fc .fc-timegrid-slot-label {
+      color: var(--text-secondary);
+      font-size: .75rem;
+      font-weight: 500;
+    }
+
+    .fc .fc-col-header {
+      display: none; /* hide the day header row – we have our own */
+    }
+
+    .fc .fc-scrollgrid {
+      border-radius: 8px;
+      overflow: hidden;
+      border-color: var(--border) !important;
+    }
+
+    .fc .fc-scrollgrid td,
+    .fc .fc-scrollgrid th {
+      border-color: var(--border) !important;
+    }
+
+    .fc .fc-timegrid-axis {
+      border-color: var(--border) !important;
+    }
+
+    /* Event pill colours per room index */
+    .room:nth-child(1) .fc-event {
+      background: var(--room1) !important;
+      border-color: var(--room1) !important;
+    }
+
+    .room:nth-child(2) .fc-event {
+      background: var(--room2) !important;
+      border-color: var(--room2) !important;
+    }
+
+    .room:nth-child(3) .fc-event {
+      background: var(--room3) !important;
+      border-color: var(--room3) !important;
+    }
+
+    .fc-event {
+      border-radius: 6px !important;
+      padding: 2px 4px !important;
+      font-weight: 500 !important;
+    }
+
+    .fc .fc-highlight {
+      background: rgba(99,102,241,.12) !important;
+      border-radius: 4px;
+    }
+
+    /* ── Modal overlay ── */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(15,23,42,.45);
+      backdrop-filter: blur(3px);
+      z-index: 9999;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-overlay.active { display: flex; }
+
+    .modal {
+      background: var(--surface);
+      border-radius: var(--radius);
+      box-shadow: 0 20px 60px rgba(0,0,0,.2);
+      padding: 28px 28px 24px;
+      width: 360px;
+      max-width: 94vw;
+      animation: modal-in .18s ease;
+    }
+
+    @keyframes modal-in {
+      from { opacity: 0; transform: translateY(12px) scale(.97); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .modal h3 {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 6px;
+    }
+
+    .modal p {
+      font-size: .85rem;
+      color: var(--text-secondary);
+      margin-bottom: 18px;
+    }
+
+    .modal input[type="text"] {
+      width: 100%;
+      font-family: 'Inter', Arial, sans-serif;
+      font-size: .9rem;
+      color: var(--text-primary);
+      background: var(--bg);
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      padding: 9px 12px;
+      outline: none;
+      transition: border-color .15s, box-shadow .15s;
+      margin-bottom: 18px;
+    }
+
+    .modal input[type="text"]:focus {
+      border-color: #6366f1;
+      box-shadow: 0 0 0 3px rgba(99,102,241,.15);
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+
+    .btn {
+      height: 36px;
+      padding: 0 16px;
+      border: none;
+      border-radius: 8px;
+      font-family: 'Inter', Arial, sans-serif;
+      font-size: .85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background .15s, transform .1s;
+    }
+
+    .btn:active { transform: scale(.97); }
+
+    .btn-ghost {
+      background: var(--bg);
+      color: var(--text-secondary);
+      border: 1px solid var(--border);
+    }
+
+    .btn-ghost:hover { background: var(--border); }
+
+    .btn-primary {
+      background: #6366f1;
+      color: #fff;
+    }
+
+    .btn-primary:hover { background: #4f46e5; }
+
+    .btn-danger {
+      background: #fef2f2;
+      color: #dc2626;
+      border: 1px solid #fecaca;
+    }
+
+    .btn-danger:hover { background: #fee2e2; }
+
+    /* ── Delete confirm modal ── */
+    #deleteModal .modal-icon {
+      width: 44px;
+      height: 44px;
+      background: #fef2f2;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+      margin-bottom: 14px;
+    }
   </style>
 </head>
 
 <body>
 
-  <h1 style="text-align:center;">Prenotazione Spazi</h1>
+  <header>
+    <h1>Prenotazione Spazi</h1>
+    <p>Seleziona un intervallo di tempo per aggiungere o gestire una prenotazione</p>
+  </header>
 
   <div class="container">
     <div class="room">
-      <h2>Tardis</h2>
+      <div class="room-header">
+        <span class="room-dot"></span>
+        <h2>Tardis</h2>
+      </div>
       <div class="date-controls">
         <input type="date" id="datepicker1">
         <div class="nav-group">
-          <button class="nav-btn prev-btn" id="prev1">←</button>
-          <button class="nav-btn next-btn" id="next1">→</button>
+          <button class="nav-btn prev-btn" id="prev1">&#8592;</button>
+          <button class="nav-btn next-btn" id="next1">&#8594;</button>
         </div>
         <button class="today-btn" id="today1">Oggi</button>
       </div>
       <div id="calendar1"></div>
     </div>
     <div class="room">
-      <h2>Aula</h2>
+      <div class="room-header">
+        <span class="room-dot"></span>
+        <h2>Aula</h2>
+      </div>
       <div class="date-controls">
         <input type="date" id="datepicker2">
         <div class="nav-group">
-          <button class="nav-btn prev-btn" id="prev2">←</button>
-          <button class="nav-btn next-btn" id="next2">→</button>
+          <button class="nav-btn prev-btn" id="prev2">&#8592;</button>
+          <button class="nav-btn next-btn" id="next2">&#8594;</button>
         </div>
         <button class="today-btn" id="today2">Oggi</button>
       </div>
       <div id="calendar2"></div>
     </div>
     <div class="room">
-      <h2>Museo</h2>
+      <div class="room-header">
+        <span class="room-dot"></span>
+        <h2>Museo</h2>
+      </div>
       <div class="date-controls">
         <input type="date" id="datepicker3">
         <div class="nav-group">
-          <button class="nav-btn prev-btn" id="prev3">←</button>
-          <button class="nav-btn next-btn" id="next3">→</button>
+          <button class="nav-btn prev-btn" id="prev3">&#8592;</button>
+          <button class="nav-btn next-btn" id="next3">&#8594;</button>
         </div>
         <button class="today-btn" id="today3">Oggi</button>
       </div>
@@ -150,11 +426,98 @@
     </div>
   </div>
 
+  <!-- ── Booking modal ── -->
+  <div class="modal-overlay" id="bookingOverlay">
+    <div class="modal" id="bookingModal">
+      <h3>Nuova prenotazione</h3>
+      <p id="bookingSubtitle">Inserisci il tuo nome per confermare.</p>
+      <input type="text" id="bookingName" placeholder="Il tuo nome…" maxlength="80">
+      <div class="modal-actions">
+        <button class="btn btn-ghost" id="bookingCancel">Annulla</button>
+        <button class="btn btn-primary" id="bookingConfirm">Prenota</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Delete confirm modal ── -->
+  <div class="modal-overlay" id="deleteOverlay">
+    <div class="modal" id="deleteModal">
+      <div class="modal-icon">🗑</div>
+      <h3>Elimina prenotazione</h3>
+      <p id="deleteSubtitle">Vuoi davvero eliminare questa prenotazione?</p>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" id="deleteCancel">Annulla</button>
+        <button class="btn btn-danger" id="deleteConfirm">Elimina</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     document.addEventListener('DOMContentLoaded', function () {
-      const socket = io(); // Connessione al server Socket.IO
+      const socket = io();
       const calendars = {};
 
+      /* ── Modal helpers ── */
+      function showBookingModal(subtitle) {
+        return new Promise((resolve) => {
+          document.getElementById('bookingSubtitle').textContent = subtitle;
+          const nameInput = document.getElementById('bookingName');
+          nameInput.value = '';
+          const overlay = document.getElementById('bookingOverlay');
+          overlay.classList.add('active');
+          nameInput.focus();
+
+          function cleanup() {
+            overlay.classList.remove('active');
+            document.getElementById('bookingConfirm').removeEventListener('click', onConfirm);
+            document.getElementById('bookingCancel').removeEventListener('click', onCancel);
+            nameInput.removeEventListener('keydown', onKey);
+          }
+
+          function onConfirm() {
+            const v = nameInput.value.trim();
+            cleanup();
+            resolve(v || null);
+          }
+
+          function onCancel() {
+            cleanup();
+            resolve(null);
+          }
+
+          function onKey(e) {
+            if (e.key === 'Enter') onConfirm();
+            if (e.key === 'Escape') onCancel();
+          }
+
+          document.getElementById('bookingConfirm').addEventListener('click', onConfirm);
+          document.getElementById('bookingCancel').addEventListener('click', onCancel);
+          nameInput.addEventListener('keydown', onKey);
+        });
+      }
+
+      function showDeleteModal(eventTitle) {
+        return new Promise((resolve) => {
+          document.getElementById('deleteSubtitle').textContent =
+            `Vuoi davvero eliminare la prenotazione di "${eventTitle}"?`;
+          const overlay = document.getElementById('deleteOverlay');
+          overlay.classList.add('active');
+
+          function cleanup() {
+            overlay.classList.remove('active');
+            document.getElementById('deleteConfirm').removeEventListener('click', onConfirm);
+            document.getElementById('deleteCancel').removeEventListener('click', onCancel);
+          }
+
+          function onConfirm() { cleanup(); resolve(true); }
+          function onCancel()  { cleanup(); resolve(false); }
+
+          document.getElementById('deleteConfirm').addEventListener('click', onConfirm);
+          document.getElementById('deleteCancel').addEventListener('click', onCancel);
+        });
+      }
+
+      /* ── Calendar factory ── */
       function createCalendar(id) {
         const calendarEl = document.getElementById(id);
         const calendar = new FullCalendar.Calendar(calendarEl, {
@@ -173,46 +536,37 @@
             hour12: false
           },
           headerToolbar: false,
-          events: [], // Saranno caricati via socket.io
+          events: [],
 
           select: async function (info) {
-            const title = prompt('Inserisci il tuo nome per la prenotazione:');
-            if (title && title.trim() !== '') {
-              const newEvent = {
-                title: title,
-                start: info.startStr,
-                end: info.endStr,
-                room: id
-              };
+            const title = await showBookingModal('Inserisci il tuo nome per confermare.');
+            if (title) {
               await fetch('/events', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(newEvent)
+                body: JSON.stringify({ title, start: info.startStr, end: info.endStr, room: id })
               });
             }
             calendar.unselect();
           },
 
           eventChange: async function (info) {
-            const updatedEvent = {
-              title: info.event.title,
-              start: info.event.start.toISOString(),
-              end: info.event.end.toISOString(),
-              room: id
-            };
-
             await fetch(`/events/${info.event.id}`, {
               method: 'PUT',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(updatedEvent)
+              body: JSON.stringify({
+                title: info.event.title,
+                start: info.event.start.toISOString(),
+                end: info.event.end.toISOString(),
+                room: id
+              })
             });
           },
 
           eventClick: async function (info) {
-            if (confirm(`Vuoi eliminare la prenotazione di "${info.event.title}"?`)) {
-              await fetch(`/events/${info.event.id}`, {
-                method: 'DELETE'
-              });
+            const confirmed = await showDeleteModal(info.event.title);
+            if (confirmed) {
+              await fetch(`/events/${info.event.id}`, { method: 'DELETE' });
             }
           }
         });
@@ -220,54 +574,41 @@
         calendar.render();
         calendars[id] = calendar;
 
-        const pickerId = 'datepicker' + id.replace('calendar', '');
-        const picker = document.getElementById(pickerId);
-        const todayBtn = document.getElementById('today' + id.replace('calendar', ''));
-        const prevBtn = document.getElementById('prev' + id.replace('calendar', ''));
-        const nextBtn = document.getElementById('next' + id.replace('calendar', ''));
-        
-        // Imposta la data iniziale
+        const num = id.replace('calendar', '');
+        const picker  = document.getElementById('datepicker' + num);
+        const todayBtn = document.getElementById('today' + num);
+        const prevBtn  = document.getElementById('prev'  + num);
+        const nextBtn  = document.getElementById('next'  + num);
+
         picker.valueAsDate = new Date();
-        
-        // Gestione click sul pulsante Oggi
-        todayBtn.addEventListener('click', function() {
-            const today = new Date();
-            picker.valueAsDate = today;
-            calendar.today();
-            calendar.gotoDate(today);
+
+        todayBtn.addEventListener('click', () => {
+          const today = new Date();
+          picker.valueAsDate = today;
+          calendar.today();
+          calendar.gotoDate(today);
         });
 
-        // Gestione click sui pulsanti di navigazione
-        prevBtn.addEventListener('click', function() {
-            const currentDate = calendar.getDate();
-            const newDate = new Date(currentDate);
-            newDate.setDate(newDate.getDate() - 1);
-            picker.valueAsDate = newDate;
-            calendar.gotoDate(newDate);
+        prevBtn.addEventListener('click', () => {
+          const d = new Date(calendar.getDate());
+          d.setDate(d.getDate() - 1);
+          picker.valueAsDate = d;
+          calendar.gotoDate(d);
         });
 
-        nextBtn.addEventListener('click', function() {
-            const currentDate = calendar.getDate();
-            const newDate = new Date(currentDate);
-            newDate.setDate(newDate.getDate() + 1);
-            picker.valueAsDate = newDate;
-            calendar.gotoDate(newDate);
+        nextBtn.addEventListener('click', () => {
+          const d = new Date(calendar.getDate());
+          d.setDate(d.getDate() + 1);
+          picker.valueAsDate = d;
+          calendar.gotoDate(d);
         });
 
-        picker.addEventListener('change', function (e) {
-          const newDate = e.target.value;
-          if (newDate) calendar.gotoDate(newDate);
+        picker.addEventListener('change', (e) => {
+          if (e.target.value) calendar.gotoDate(e.target.value);
         });
 
-        socket.on('loadEvents', (events) => {
-          calendar.removeAllEvents();
-          calendar.addEventSource(events.filter(e => e.room === id));
-        });
-
-        socket.on('eventUpdated', (events) => {
-          calendar.removeAllEvents();
-          calendar.addEventSource(events.filter(e => e.room === id));
-        });
+        socket.on('loadEvents',    (events) => { calendar.removeAllEvents(); calendar.addEventSource(events.filter(e => e.room === id)); });
+        socket.on('eventUpdated',  (events) => { calendar.removeAllEvents(); calendar.addEventSource(events.filter(e => e.room === id)); });
       }
 
       createCalendar('calendar1');
